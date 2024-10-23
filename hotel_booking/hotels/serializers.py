@@ -92,7 +92,7 @@ class BookingSerializer(serializers.ModelSerializer):
         return Booking.objects.create(**validated_data)
 
     def validate(self, data):
-        if data['user'].is_staff:  # Проверка, что владелец отеля не может бронировать
+        if data['user'].is_staff:
             raise serializers.ValidationError("Hotel owners cannot book their own rooms.")
         return data
 
