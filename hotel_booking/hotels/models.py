@@ -28,7 +28,7 @@ class UserProfile(models.Model):
 class Hotel(models.Model):
     name_hotel = models.CharField(max_length=32)
     description = models.TextField()
-    address = models.CharField(max_length=32)
+    address = models.CharField(max_length=32, null=True, blank=True)
     city = models.CharField(max_length=32)
     country = models.CharField(max_length=32)
     date = models.DateField(auto_now=True)
@@ -53,7 +53,7 @@ class HotelPhotos(models.Model):
 
 
 class Room(models.Model):
-    hotel = models.ForeignKey(Hotel, on_delete=models.CASCADE)
+    hotel = models.ForeignKey(Hotel, related_name='room',  on_delete=models.CASCADE)
     room_number = models.SmallIntegerField(default=0)
     capacity = models.PositiveIntegerField(default=0)
     price_per_night = models.PositiveIntegerField()
@@ -72,9 +72,28 @@ class Review(models.Model):
     text = models.TextField()
     parent_review = models.ForeignKey('self', related_name='replies', null=True, blank=True, on_delete=models.CASCADE)
     created_date = models.DateTimeField(auto_now_add=True)
-    stars = models.IntegerField(choices=[(i, str(1)) for i in range(1, 6)], verbose_name="Рейтинг")
+    stars = models.IntegerField(choices=[(i, str(i)) for i in range(1, 6)], verbose_name="Рейтинг")
     hotel = models.ForeignKey(Hotel, related_name='reviews', on_delete=models.CASCADE)
 
     def __str__(self):
         return f'{self.author}'
 
+
+class Booking(models.Model):
+    room = models.ForeignKey(Room, on_delete=models.CASCADE)
+    user = models.ForeignKey(UserProfile, on_delete=models.CASCADE)
+    start_date = models.DateField()
+    end_date = models.DateField()
+
+    def save(self, *args, **kwargs):
+        if Booking.objects.filter(room=self.room, start_date__lte=self.end_date,
+                                  end_date__gte=self.start_date).exists():
+            raise ValueError("Номер уже забронирован на эти даты.")
+        self.room.status = 'забронировано'
+        self.room.save()
+        super().save(*args, **kwargs)
+
+    def delete(self, *args, **kwargs):
+        self.room.status = 'доступный'
+        self.room.save()
+        super().delete(*args, **kwargs)

@@ -2,9 +2,11 @@ from django.urls import path
 from .views import *
 
 urlpatterns = [
+
+
     path('', HotelListViewSet.as_view({'get': 'list', 'post': 'create'}), name='hotel_list'),
-    path('<int:pk>/', HotelDetailViewSet.as_view({'get': 'retrieve', 'put': 'update',
-                                                  'delete': 'destroy'}), name='hotel_detail'),
+    path('<int:pk>/', HotelViewSet.as_view({'get': 'retrieve', 'put': 'update',
+                                            'delete': 'destroy'}), name='hotel_detail'),
 
     path('users/', UserProfileViewSet.as_view({'get': 'list', 'post': 'create'}), name='user_list'),
     path('users/<int:pk>/', UserProfileViewSet.as_view({'get': 'retrieve', 'put': 'update',
@@ -25,5 +27,9 @@ urlpatterns = [
     path('photos/', RoomPhotosViewSet.as_view({'get': 'list', 'post': 'create'}), name='photos_list'),
     path('photos/<int:pk>/', RoomPhotosViewSet.as_view({'get': 'retrieve', 'put': 'update',
                                                         'delete': 'destroy'}), name='photos_detail'),
+
+    path('Booking/', BookingViewSet.as_view({'get': 'list', 'post': 'create'}), name='Booking_list'),
+    path('Booking/<int:pk>/', BookingViewSet.as_view({'get': 'retrieve', 'put': 'update',
+                                                     'delete': 'destroy'}), name='Booking_detail'),
 
 ]

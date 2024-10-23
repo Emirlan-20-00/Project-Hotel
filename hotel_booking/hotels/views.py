@@ -1,9 +1,10 @@
 from django.shortcuts import render
-from rest_framework import viewsets
+from rest_framework import viewsets, generics, status, permissions
 from .serializers import *
 from django_filters.rest_framework import DjangoFilterBackend
 from .filters import HotelFilter
 from rest_framework.filters import SearchFilter, OrderingFilter
+from rest_framework.permissions import IsAuthenticated
 
 
 class UserProfileViewSet(viewsets.ModelViewSet):
@@ -18,14 +19,13 @@ class HotelListViewSet(viewsets.ModelViewSet):
     filterset_class = HotelFilter
     search_fields = ['name_hotel']
     ordering_fields = ['price', 'date']
+    permission_classes = [permissions.IsAuthenticated]
 
 
-class HotelDetailViewSet(viewsets.ModelViewSet):
+class HotelViewSet(viewsets.ModelViewSet):
     queryset = Hotel.objects.all()
-    serializer_class = HotelDetailSerializer
-
-    def perform_create(self, serializer):
-        serializer.save(owner=self.request.user)
+    serializer_class = HotelSerializer
+    permission_classes = [permissions.IsAuthenticatedOrReadOnly]
 
 
 class HotelPhotosViewSet(viewsets.ModelViewSet):
@@ -46,3 +46,14 @@ class RoomPhotosViewSet(viewsets.ModelViewSet):
 class ReviewViewSet(viewsets.ModelViewSet):
     queryset = Review.objects.all()
     serializer_class = ReviewSerializer
+
+
+class BookingViewSet(viewsets.ModelViewSet):
+    serializer_class = BookingSerializer
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        return Booking.objects.filter(user=self.request.user)
+
+    def perform_create(self, serializer):
+        serializer.save(user=self.request.user)

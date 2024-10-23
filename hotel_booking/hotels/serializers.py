@@ -1,3 +1,4 @@
+from django.contrib.auth import authenticate
 from rest_framework import serializers
 from .models import *
 
@@ -21,6 +22,19 @@ class HotelListSerializer(serializers.ModelSerializer):
     class Meta:
         model = Hotel
         fields = ['id', 'name_hotel', 'country', 'city', 'date', 'average_rating', 'price',]
+
+    def get_average_rating(self, obj):
+        return obj.get_average_rating()
+
+
+class HotelSerializer(serializers.ModelSerializer):
+    average_rating = serializers.SerializerMethodField()
+    date = serializers.DateField(format='%d-%m-%Y')
+
+    class Meta:
+        model = Hotel
+        fields = ['id', 'name_hotel', 'country', 'city', 'date', 'average_rating', 'price', 'description', 'owner',
+                  'active', 'hotel_video', 'room',]
 
     def get_average_rating(self, obj):
         return obj.get_average_rating()
@@ -69,4 +83,16 @@ class HotelDetailSerializer(serializers.ModelSerializer):
         return obj.get_average_rating()
 
 
+class BookingSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Booking
+        fields = ['id', 'room', 'user', 'start_date', 'end_date']
+
+    def create(self, validated_data):
+        return Booking.objects.create(**validated_data)
+
+    def validate(self, data):
+        if data['user'].is_staff:  # Проверка, что владелец отеля не может бронировать
+            raise serializers.ValidationError("Hotel owners cannot book their own rooms.")
+        return data
 
