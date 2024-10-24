@@ -54,7 +54,7 @@ class HotelPhotos(models.Model):
 
 class Room(models.Model):
     hotel = models.ForeignKey(Hotel, related_name='room',  on_delete=models.CASCADE)
-    room_number = models.SmallIntegerField(default=0)
+    room_number = models.CharField(max_length=60, default=0)
     capacity = models.PositiveIntegerField(default=0)
     price_per_night = models.PositiveIntegerField()
 
